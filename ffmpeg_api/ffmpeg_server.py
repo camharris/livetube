@@ -10,7 +10,6 @@ from starlette.status import HTTP_403_FORBIDDEN, HTTP_500_INTERNAL_SERVER_ERROR
 
 logger.setLevel(logging.DEBUG)
 IPFS_GW='https://ipfs.io/ipfs/{}'
-#API_KEY='c4218a3d-fd3b-4ccb-92a1-c7688d7ea700'
 API_KEY = os.getenv('LIVEPEER_API_KEY')
 API_URL = 'https://livepeer.com/api/{}'
 headers = {
@@ -62,13 +61,7 @@ def stream_video(stream_key, cid):
   file_input = IPFS_GW.format(cid)
   stream_output = "{}/{}".format(ingest_endpoint,stream_key)
 
-  # stream_info = {
-  #   "name": cid,
-  #   "data":  
-  # }
-
   ffmpeg_command = 'ffmpeg -re -i "{}" -c:v h264 -c:a aac -f flv {}'.format(file_input, stream_output)   
-
 
   process = subprocess.run(shlex.split(ffmpeg_command))
 
