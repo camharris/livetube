@@ -1,0 +1,17 @@
+version: "3.8"
+
+services: 
+   api:
+    build: ffmpeg_api/
+    env_file: 
+      - ffmpeg_api/.env.local
+    ports:
+      - 8000:8000
+
+   web:
+    build: livetube-app/
+    env_file:
+      - livetube-app/.env.local
+    ports:
+      -  3000:3000
+
