@@ -8,8 +8,7 @@ export async function getServerSideProps() {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
-      //Authorization: 'Basic ' + process.env.NEXT_PUBLIC_SLATE_API_KEY,
-      Authorization: 'Basic SLAe55e06d4-c873-43f1-b76b-d8937054e218TE'
+      Authorization: 'Basic ' + process.env.NEXT_PUBLIC_SLATE_API_KEY,
     }
   })
   const data = await response.json()
