@@ -49,11 +49,13 @@ export default function Home({ data }) {
         <div className="grid">
           {data.user.library.map(item => (
 
-            <a key={item.id} href="/video" className="card">
+            <Link href="/video/">
+            <a key={item.id} className="card">
               <img src="/default_video_thumb.png" sizes="(max-width: 100px) 100px" width="300"/>
               <h4>{item.data.name}</h4>
               <h5>{item.data.body}</h5>
             </a>
+            </Link>
           ))}
 
         </div>

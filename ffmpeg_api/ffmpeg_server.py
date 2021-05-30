@@ -1,19 +1,17 @@
 import os
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException, BackgroundTasks
 from fastapi.logger import logger
 from pydantic import BaseModel
-import json
 import requests
 import shlex 
 import subprocess
 import logging
-from io import StringIO
-
+from starlette.status import HTTP_403_FORBIDDEN, HTTP_500_INTERNAL_SERVER_ERROR
 
 logger.setLevel(logging.DEBUG)
 IPFS_GW='https://ipfs.io/ipfs/{}'
-API_KEY='c4218a3d-fd3b-4ccb-92a1-c7688d7ea700'
-#API_KEY = os.getenv('LIVEPEER_API_KEY')
+#API_KEY='c4218a3d-fd3b-4ccb-92a1-c7688d7ea700'
+API_KEY = os.getenv('LIVEPEER_API_KEY')
 API_URL = 'https://livepeer.com/api/{}'
 headers = {
     'content-type': 'application/json',
@@ -63,24 +61,17 @@ def stream_video(stream_key, cid):
   #Run ffmpeg
   file_input = IPFS_GW.format(cid)
   stream_output = "{}/{}".format(ingest_endpoint,stream_key)
-  ffmpeg_command = "ffmpeg -re -i {} -c:v h264 -c:a aac -f flv rtmp://{}".format(file_input, stream_output)   
 
-  try: 
-    ffmpeg_process = subprocess.Popen(
-      shlex.split(ffmpeg_command),
-      stdout=subprocess.PIPE,
-      stderr=subprocess.STDOUT,
-    ) 
+  # stream_info = {
+  #   "name": cid,
+  #   "data":  
+  # }
 
-    process_output, _ = ffmpeg_process.communicate()
-    log_subprocess_output(process_output)
-  except (OSError, subprocess.CalledProcessError) as exception:
-    logger.info('Exception occurred: ' + str(exception))
-    logger.info('Subprocess failed')
-    return False
-  else:
-    logger.info('Subprocess finished')
-    
+  ffmpeg_command = 'ffmpeg -re -i "{}" -c:v h264 -c:a aac -f flv {}'.format(file_input, stream_output)   
+
+
+  process = subprocess.run(shlex.split(ffmpeg_command))
+
   return True
 
 
@@ -98,7 +89,7 @@ def get_endpoints():
 
 
 @app.post('/streams/')
-async def create_stream(stream: Stream):
+async def create_stream(stream: Stream, background_tasks: BackgroundTasks):
 
     r = requests.post(
         API_URL.format('stream'),
@@ -107,16 +98,21 @@ async def create_stream(stream: Stream):
             'name': stream.name,
             'profiles': profiles,
         })
+
+    data = r.json()
     if r.status_code == 201:
         data = r.json()
+
+        # Extract stream key
+        stream_key = data['streamKey']
+
+        background_tasks.add_task(stream_video, stream_key, stream.cid)
+
         return data
-    data = r.json()
     
-    # Extract stream key
-    stream_key = data['streamKey']
-    stream_video(stream_key, stream.cid)
-    logger.info("got here")
-    return data
-
-
+    else: 
+        raise HTTPException(
+          status_code=HTTP_500_INTERNAL_SERVER_ERROR, detail="Couldn't reach livepeer api"
+        )
+    
     
