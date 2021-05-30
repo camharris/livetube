@@ -3,6 +3,8 @@
 ![logo](livetube-app/public/livepeer_logo.png)
 
 
+## [YouTube Demo](https://www.youtube.com/watch?v=g6rHEmCJhdo)
+
 liveTube is a tube site that allows videos to be uploaded to a collection within 
 [slate.host](http://slate.host) and these videos are then deployed in the web app frontend.
 Once the user chooses a video to stream in the frontend, a backend process is kicked off where a stream is created via ffmpeg pulling the video file from the ipfs gateway and sending it to Livepeer ingest endpoint.
